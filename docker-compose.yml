@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: bottle_cap_db
+    environment:
+      POSTGRES_DB: bottle_cap
+      POSTGRES_USER: bottle_user
+      POSTGRES_PASSWORD: bottle_pass
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bottle_user -d bottle_cap']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: bottle_cap_api
+    environment:
+      DATABASE_URL: postgresql://bottle_user:bottle_pass@postgres:5432/bottle_cap
+      JWT_SECRET: super_secret_jwt_key_change_in_production
+      PORT: 4000
+      NODE_ENV: development
+    ports:
+      - '4000:4000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    command: node src/app.js
+
+  frontend:
+    build: ./frontend
+    container_name: bottle_cap_web
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:4000
+
+volumes:
+  postgres_data:
