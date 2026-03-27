@@ -31,6 +31,7 @@ export const api = {
   getLeaderboard:   ()       => request('/character/leaderboard'),
   updateAppearance: (data)   => request('/character/appearance', { method: 'PATCH', body: JSON.stringify({ appearance: data }) }),
   updateName:       (name)   => request('/character/name',       { method: 'PATCH', body: JSON.stringify({ name }) }),
+  feedCharacter:    ()       => request('/character/feed', { method: 'POST' }),
 
   // 기부
   getDonationPoints: ()     => request('/donations/points'),

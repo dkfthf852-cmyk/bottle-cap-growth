@@ -2,15 +2,14 @@ const express = require('express');
 const auth    = require('../middleware/auth');
 const {
   getCharacter,
+  feedCharacter,
   getGrowthLog,
   getLeaderboard,
   updateAppearance,
-  updateName,
 } = require('../services/characterService');
 
 const router = express.Router();
 
-// 내 캐릭터 조회
 router.get('/', auth, async (req, res) => {
   try {
     const character = await getCharacter(req.userId);
@@ -21,21 +20,17 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// 캐릭터 이름 변경
-router.patch('/name', auth, async (req, res) => {
+// 먹이주기 (100 XP 소비 → 성장)
+router.post('/feed', auth, async (req, res) => {
   try {
-    const { name } = req.body;
-    if (!name || name.trim().length === 0) {
-      return res.status(400).json({ error: '이름을 입력해주세요.' });
-    }
-    const updated = await updateName(req.userId, name);
-    res.json({ name: updated });
+    const result = await feedCharacter(req.userId);
+    res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const status = err.message.includes('부족') ? 400 : 500;
+    res.status(status).json({ error: err.message });
   }
 });
 
-// 외형 변경
 router.patch('/appearance', auth, async (req, res) => {
   try {
     const { appearance } = req.body;
@@ -49,7 +44,6 @@ router.patch('/appearance', auth, async (req, res) => {
   }
 });
 
-// 성장 로그
 router.get('/growth-log', auth, async (req, res) => {
   try {
     const limit  = Math.min(parseInt(req.query.limit  || 20), 100);
@@ -61,7 +55,6 @@ router.get('/growth-log', auth, async (req, res) => {
   }
 });
 
-// 리더보드
 router.get('/leaderboard', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit || 20), 50);

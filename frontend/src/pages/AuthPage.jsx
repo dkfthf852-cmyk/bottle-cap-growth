@@ -56,8 +56,8 @@ export default function AuthPage({ onAuth }) {
         <form onSubmit={handleSubmit}>
           {mode === 'register' && (
             <>
-              <label style={label}>아이디</label>
-              <input style={input} type="text" placeholder="아이디" value={username} onChange={(e) => setUsername(e.target.value)} required />
+              <label style={label}>닉네임</label>
+              <input style={input} type="text" placeholder="닉네임 (다른 사람에게 보여집니다)" value={username} onChange={(e) => setUsername(e.target.value)} required />
             </>
           )}
           <label style={label}>이메일</label>

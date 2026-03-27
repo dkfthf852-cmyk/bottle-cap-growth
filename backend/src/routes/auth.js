@@ -11,7 +11,7 @@ router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
-      return res.status(400).json({ error: '모든 필드를 입력해주세요.' });
+      return res.status(400).json({ error: '닉네임, 이메일, 비밀번호를 모두 입력해주세요.' });
     }
     if (password.length < 6) {
       return res.status(400).json({ error: '비밀번호는 6자 이상이어야 합니다.' });
@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
       [email, username]
     );
     if (existing.rows.length > 0) {
-      return res.status(409).json({ error: '이미 사용 중인 이메일 또는 아이디입니다.' });
+      return res.status(409).json({ error: '이미 사용 중인 이메일 또는 닉네임입니다.' });
     }
 
     const hashed = await bcrypt.hash(password, 10);

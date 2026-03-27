@@ -23,25 +23,22 @@ router.get('/points', async (req, res) => {
 // 기부 등록
 router.post('/', auth, async (req, res) => {
   try {
-    const { qrCode, donationPointId, quantity, userLat, userLng } = req.body;
-    if (!quantity || quantity < 1) {
-      return res.status(400).json({ error: '기부 수량을 1개 이상 입력해주세요.' });
+    const { qrCode, donationPointId, quantity, weightGrams } = req.body;
+    if (!weightGrams || parseInt(weightGrams) < 1) {
+      return res.status(400).json({ error: '무게를 입력해주세요. (1g 이상)' });
     }
     if (!qrCode && !donationPointId) {
       return res.status(400).json({ error: 'QR 코드 또는 기부소 ID가 필요합니다.' });
     }
-
     const donation = await createDonation(req.userId, {
       qrCode,
       donationPointId,
-      quantity: parseInt(quantity),
-      userLat,
-      userLng,
+      quantity: quantity ? parseInt(quantity) : 0,
+      weightGrams: parseInt(weightGrams),
     });
-
     res.status(201).json(donation);
   } catch (err) {
-    const status = err.message.includes('유효하지') || err.message.includes('최대') ? 400 : 500;
+    const status = err.message.includes('유효하지') || err.message.includes('최대') || err.message.includes('무게') ? 400 : 500;
     res.status(status).json({ error: err.message });
   }
 });

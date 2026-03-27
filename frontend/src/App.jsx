@@ -55,6 +55,11 @@ export default function App() {
     }, 500);
   }
 
+  const handleFeed = useCallback(async () => {
+    await api.feedCharacter();
+    await loadCharacter();
+  }, [loadCharacter]);
+
   if (!auth.user) return <AuthPage onAuth={auth} />;
 
   return (
@@ -95,7 +100,7 @@ export default function App() {
       {/* 컨텐츠 */}
       <main style={main}>
         {tab === 'character' && (
-          <CharacterViewer character={character} onRefresh={loadCharacter} />
+          <CharacterViewer character={character} onRefresh={loadCharacter} onFeed={handleFeed} />
         )}
         {tab === 'donate' && (
           <DonationForm onDonated={handleDonated} />

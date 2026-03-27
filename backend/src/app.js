@@ -6,7 +6,7 @@ const migrate = require('./db/migrate');
 const authRoutes      = require('./routes/auth');
 const donationRoutes  = require('./routes/donations');
 const characterRoutes = require('./routes/characters');
-const { applyDonationGrowth } = require('./services/characterService');
+const { creditXpFromDonation } = require('./services/characterService');
 const { eventBus, EVENTS }    = require('./events/eventBus');
 
 const app  = express();
@@ -36,12 +36,8 @@ app.get('/health', (_req, res) => res.json({ status: 'ok', time: new Date() }));
 // ── 이벤트 구독 (Growth Engine) ───────────────────────────
 eventBus.on(EVENTS.DONATION_VERIFIED, async (donation) => {
   try {
-    const result = await applyDonationGrowth(donation);
-    console.log(
-      `[Growth] user=${donation.user_id} caps=${donation.quantity} ` +
-      `xp=+${result.xpGained} level=${result.levelBefore}→${result.levelAfter} ` +
-      `stage=${result.stageBefore}→${result.stageAfter}`
-    );
+    const result = await creditXpFromDonation(donation);
+    console.log(`[XP 적립] user=${donation.user_id} weight=${donation.weight_grams}g xp=+${result.xpGained}`);
   } catch (err) {
     console.error('[Growth] 오류:', err.message);
   }

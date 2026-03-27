@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 
-const STAGE_EMOJI = { EGG: '🥚', BABY: '🐣', CHILD: '🐥', TEEN: '🐤', ADULT: '🦜', MASTER: '🦅' };
+const STAGE_EMOJI = { EGG: '🥇', BABY: '🐣', CHILD: '🐥', TEEN: '🐤', ADULT: '🦜', MASTER: '🦅' };
 const RANK_BADGE  = ['🥇', '🥈', '🥉'];
 
 export default function Leaderboard() {
@@ -9,10 +9,7 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getLeaderboard()
-      .then(setBoard)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    api.getLeaderboard().then(setBoard).catch(console.error).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div style={card}><p style={{ color: '#999', textAlign: 'center' }}>로딩 중...</p></div>;
@@ -26,19 +23,15 @@ export default function Leaderboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {board.map((entry, i) => (
             <div key={i} style={{ ...row, background: i < 3 ? '#fffbf0' : '#fafafa' }}>
-              <div style={{ fontSize: 22, width: 32, textAlign: 'center' }}>
-                {RANK_BADGE[i] || `${i + 1}`}
-              </div>
+              <div style={{ fontSize: 22, width: 32, textAlign: 'center' }}>{RANK_BADGE[i] || `${i + 1}`}</div>
               <div style={{ fontSize: 20 }}>{STAGE_EMOJI[entry.stage]}</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>
-                  {entry.name} <span style={{ fontSize: 12, color: '#888' }}>@{entry.username}</span>
-                </div>
+                <div style={{ fontSize: 15, fontWeight: 700 }}>{entry.username}</div>
                 <div style={{ fontSize: 12, color: '#888' }}>Lv.{entry.level} · {entry.stage}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: '#4caf50' }}>
-                  {entry.total_caps_donated.toLocaleString()}개
+                  {(entry.total_weight_grams || 0).toLocaleString()}g
                 </div>
                 <div style={{ fontSize: 11, color: '#bbb' }}>누적 기부</div>
               </div>

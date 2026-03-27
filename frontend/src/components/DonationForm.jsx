@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/client';
 
 export default function DonationForm({ onDonated }) {
-  const [points,   setPoints]   = useState([]);
-  const [pointId,  setPointId]  = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [loading,  setLoading]  = useState(false);
-  const [result,   setResult]   = useState(null);
-  const [error,    setError]    = useState('');
+  const [points,      setPoints]      = useState([]);
+  const [pointId,     setPointId]     = useState('');
+  const [quantity,    setQuantity]    = useState('');
+  const [weightGrams, setWeightGrams] = useState('');
+  const [loading,     setLoading]     = useState(false);
+  const [result,      setResult]      = useState(null);
+  const [error,       setError]       = useState('');
 
   useEffect(() => {
     api.getDonationPoints().then(setPoints).catch(console.error);
@@ -15,19 +16,19 @@ export default function DonationForm({ onDonated }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError('');
-    setResult(null);
+    setError(''); setResult(null);
     if (!pointId) return setError('기부소를 선택해주세요.');
-    if (!quantity || parseInt(quantity) < 1) return setError('수량을 입력해주세요.');
+    if (!weightGrams || parseInt(weightGrams) < 1) return setError('무게를 입력해주세요.');
 
     setLoading(true);
     try {
       const donation = await api.createDonation({
         donationPointId: pointId,
-        quantity: parseInt(quantity),
+        quantity:    quantity ? parseInt(quantity) : 0,
+        weightGrams: parseInt(weightGrams),
       });
       setResult(donation);
-      setQuantity('');
+      setQuantity(''); setWeightGrams('');
       onDonated?.();
     } catch (err) {
       setError(err.message);
@@ -44,8 +45,10 @@ export default function DonationForm({ onDonated }) {
         <div style={successBox}>
           <div style={{ fontSize: 20, marginBottom: 6 }}>기부 완료! 🎉</div>
           <div style={{ fontSize: 14 }}>
-            <b>{result.quantity}개</b> 기부 → <b>+{result.xp_awarded} XP</b> 획득
-            {result.multiplier > 1 && <span style={{ color: '#ff6b6b' }}> (×{result.multiplier} 보정)</span>}
+            <b>{result.weight_grams}g</b> 기부 → XP <b>+{result.xp_awarded}</b> 적립
+          </div>
+          <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+            캐릭터 탭에서 먹이주기 버튼으로 성장시켜 보세요! 🍬
           </div>
         </div>
       )}
@@ -54,34 +57,21 @@ export default function DonationForm({ onDonated }) {
 
       <form onSubmit={handleSubmit}>
         <label style={label}>기부소 선택</label>
-        <select
-          value={pointId}
-          onChange={(e) => setPointId(e.target.value)}
-          style={input}
-          required
-        >
+        <select value={pointId} onChange={(e) => setPointId(e.target.value)} style={input} required>
           <option value="">-- 기부소를 선택하세요 --</option>
           {points.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name} ({p.address})
-            </option>
+            <option key={p.id} value={p.id}>{p.name} ({p.address})</option>
           ))}
         </select>
 
-        <label style={label}>병뚜껑 수량</label>
-        <input
-          type="number"
-          min="1"
-          max="500"
-          placeholder="기부할 병뚜껑 수 (최대 500개)"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          style={input}
-          required
-        />
+        <label style={label}>무게 (g) <span style={{ color: '#e53935' }}>*필수</span></label>
+        <input type="number" min="1" max="10000" placeholder="병뚜껑 무게 입력 (g)" value={weightGrams} onChange={(e) => setWeightGrams(e.target.value)} style={input} required />
 
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>
-          💡 1개 = 10 XP · 첫 기부 ×2 · 7일 연속 기부 ×1.5 · 100개 이상 +20%
+        <label style={label}>개수 (개) <span style={{ color: '#aaa' }}>선택</span></label>
+        <input type="number" min="0" placeholder="병뚜껑 개수 (선택)" value={quantity} onChange={(e) => setQuantity(e.target.value)} style={input} />
+
+        <div style={{ fontSize: 12, color: '#888', marginBottom: 12, background: '#f9f9f9', borderRadius: 8, padding: '8px 10px' }}>
+          💡 10g = 1 XP 적립 · 보유 XP 100개당 먹이주기 1회
         </div>
 
         <button type="submit" disabled={loading} style={submitBtn}>
